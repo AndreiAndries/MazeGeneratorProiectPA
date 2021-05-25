@@ -98,7 +98,7 @@ Fiecare maze are in spate o matrice 2 sau 3 dimensionala pentru generarea labiri
 
 Pentru Detalii despre fiecare algoritm sunt scrise comentarii la inceputul fiecarei clase ce reprezinta un algoritm de generare.
 
-# Surse de indpiratie:
+# Surse de inspiratie:
 
 - https://www.youtube.com/watch?v=sVcB8vUFlmU
 
