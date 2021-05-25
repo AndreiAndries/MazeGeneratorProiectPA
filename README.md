@@ -107,4 +107,4 @@ Pentru Detalii despre fiecare algoritm sunt scrise comentarii la inceputul fieca
 - https://en.m.wikipedia.org/wiki/Maze_generation_algorithm
 
 # Locul de unde am invatat JavaFX:
-- https://www.youtube.com/watch?v=FLkOX4Eez6o&list=PL6gx4Cwl9DGBzfXLWLSYVy8EbTdpGbUIG
+- https://www.youtube.com/playlist?list=PL6gx4Cwl9DGBzfXLWLSYVy8EbTdpGbUIG
