@@ -98,4 +98,15 @@ Fiecare maze are in spate o matrice 2 sau 3 dimensionala pentru generarea labiri
 
 Pentru Detalii despre fiecare algoritm sunt scrise comentarii la inceputul fiecarei clase ce reprezinta un algoritm de generare.
 
+#Surse de indpiratie:
 
+- https://www.youtube.com/watch?v=sVcB8vUFlmU
+
+- https://weblog.jamisbuck.org/2010/12/29/maze-generation-eller-s-algorithm
+
+- https://en.m.wikipedia.org/wiki/Maze_generation_algorithm
+
+#Locul de unde am invatat JavaFX:
+- https://www.youtube.com/watch?v=FLkOX4Eez6o&list=PL6gx4Cwl9DGBzfXLWLSYVy8EbTdpGbUIG
+
+- https://www.youtube.com/watch?v=bhPOnSqB_EA
