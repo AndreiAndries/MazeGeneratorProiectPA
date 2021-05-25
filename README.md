@@ -32,4 +32,9 @@ In clasa main se creeaza meniul pentru a genera diferite labirinturi 2D sau 3D
 
 La meniul de sus se alege algoritmul,dimensiunea si marimea labirintului care se doreste a fi creeat
 
-![image](https://user-images.githubusercontent.com/75743080/119485807-334b1200-bd60-11eb-81bc-8d614cec0b18.png)
+![image](https://user-images.githubusercontent.com/75743080/119485957-5ecdfc80-bd60-11eb-919a-479b0ef563a6.png)
+![image](https://user-images.githubusercontent.com/75743080/119485987-655c7400-bd60-11eb-8d56-b7071d979b76.png)
+![image](https://user-images.githubusercontent.com/75743080/119486011-6beaeb80-bd60-11eb-90de-f5c5375d71ae.png)
+
+
+
