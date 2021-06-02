@@ -1,4 +1,4 @@
-package sample;
+package Mazes;
 
 import javafx.application.Platform;
 import javafx.geometry.Pos;
@@ -27,7 +27,11 @@ import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class MazeGenerator3D implements Runnable{
+/**
+ * se foloseste algoritmul GrowingTreeNewest construind doua maze-uri in paralel iar dupa se pun scarile pentru cele doua maze-uri
+ * */
+
+public class MazeGenerator3D implements Runnable,Maze{
     private int[][] maze;
     private int[][] maze2;
     private final int backgroundCode = 0;
@@ -59,7 +63,7 @@ public class MazeGenerator3D implements Runnable{
     javafx.scene.control.TextField url;
     public static Stage stage = new Stage();
 
-    MazeGenerator3D(int size,Color wall,Color cell,Color path){
+    public MazeGenerator3D(int size, Color wall, Color cell, Color path){
         this.rows = size+1;
         this.columns = size+1;
         switch (size){
@@ -92,6 +96,8 @@ public class MazeGenerator3D implements Runnable{
     }
 
     public void display(){
+        //fuctia display este functia ce reprezinta partea de front-end al oricarui maze
+        //aici se fac toate satarile pentru front-endul de generare de maze
         maze = new int[rows][columns];
         maze2 = new int[rows][columns];
         canvas = new Canvas(columns*blockSize, rows*blockSize);
@@ -382,7 +388,7 @@ public class MazeGenerator3D implements Runnable{
 
     }
 
-    void drawSquare (int row, int column, int colorCode){
+    public void drawSquare(int row, int column, int colorCode){
         Platform.runLater( () -> {
             g.setFill(color[colorCode]);
             int x = blockSize * column;
@@ -390,6 +396,7 @@ public class MazeGenerator3D implements Runnable{
             g.fillRect(x,y,blockSize,blockSize);
         });
     }
+
 
     void drawSquare1 (int row, int column, int colorCode){
         Platform.runLater( () -> {
@@ -625,5 +632,9 @@ public class MazeGenerator3D implements Runnable{
                 nrLadders--;
             }
         }
+    }
+    @Override
+    public void makeMaze(int inputRow, int inputColumn) {
+
     }
 }

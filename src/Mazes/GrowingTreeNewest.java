@@ -1,4 +1,4 @@
-package sample;
+package Mazes;
 
 import javafx.application.Platform;
 import javafx.geometry.Pos;
@@ -24,8 +24,23 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
-public class GrowingTreeRandom implements Runnable{
+/**
+ * 1. Se alege un punct random de plecare
+ *
+ * 2. Se alege în mod aleatoriu un perete în acel punct și se construieste un
+ *   pasaj către celula adiacentă, dar numai dacă celula adiacentă nu a
+ *   fost încă vizitată. Aceasta devine noua celula curenta.
+ *
+ * 3. Daca toate celulele adiacente au fost vizitate ne intoarcem la
+ *   ultima celulă care are pereți necizelați și se repeta
+ *
+ * 4. Algoritmul se termină atunci când procesul sa întors până la punctul
+ *  de plecare
+ * */
+
+public class GrowingTreeNewest implements Runnable,Maze{
     private int maze[][];
 
     private final int backgroundCode = 0;
@@ -52,7 +67,7 @@ public class GrowingTreeRandom implements Runnable{
     javafx.scene.control.TextField url;
     public static Stage stage = new Stage();
 
-    GrowingTreeRandom(int size,Color wall,Color cell,Color path){
+    public GrowingTreeNewest(int size, Color wall, Color cell, Color path){
         this.rows = size+1;
         this.columns = size+1;
         switch (size){
@@ -83,6 +98,8 @@ public class GrowingTreeRandom implements Runnable{
     }
 
     public void display(){
+        //fuctia display este functia ce reprezinta partea de front-end al oricarui maze
+        //aici se fac toate satarile pentru front-endul de generare de maze
         maze = new int[rows][columns];
         canvas = new Canvas(columns*blockSize, rows*blockSize);
         g = canvas.getGraphicsContext2D();
@@ -114,7 +131,7 @@ public class GrowingTreeRandom implements Runnable{
         runner.setDaemon(true); //thread-ul nu va opri programul din rulat
 
         runner.start();
-        startButton.setOnAction(e->{
+        startButton.setOnAction(e->{//se fac setarile pentru butonul de start si se verifica viteza pentru animatie
             runner.stop();
             String genetateSpeed = speed.getValue();
             switch (genetateSpeed){
@@ -132,7 +149,7 @@ public class GrowingTreeRandom implements Runnable{
 
 
         });
-        stopButton.setOnAction(e->{runner.stop();
+        stopButton.setOnAction(e->{runner.stop();//se fac setarile pentru butonul de stop
             for(int i=1;i<rows-1;++i){
                 for (int j = 1 ; j<columns-1;++j){
                     if(maze[i][j]==-1)
@@ -142,10 +159,11 @@ public class GrowingTreeRandom implements Runnable{
                 System.out.println();
             }
         });
-        saveButton.setOnAction(e->{
+        saveButton.setOnAction(e->{//se fac setarile pentru butonul de save
+            runner.stop();
             String saveFormat = format.getValue();
-            switch (saveFormat) {
-                case "TXT":
+            switch (saveFormat) {//se verifica formatul in care se doreste a fi salvat maze-ul
+                case "TXT"://cazul pentru format TXT
                     PrintWriter out = null;
                     try {
                         out = new PrintWriter("maze.txt");
@@ -161,7 +179,7 @@ public class GrowingTreeRandom implements Runnable{
                     }
                     out.close();
                     break;
-                case "PNG":
+                case "PNG"://cazul pentru format PNG
                     BufferedImage bufferedImage = new BufferedImage(columns * blockSize, rows * blockSize, BufferedImage.TYPE_INT_RGB);
                     String saveUrl = url.getText();
                     Graphics2D g2d = bufferedImage.createGraphics();
@@ -204,7 +222,7 @@ public class GrowingTreeRandom implements Runnable{
                         ioException.printStackTrace();
                     }
                     break;
-                case "JPG":
+                case "JPG"://Cazul pentru format JPG
                     BufferedImage bufferedImage1 = new BufferedImage(columns * blockSize, rows * blockSize, BufferedImage.TYPE_INT_RGB);
                     String saveUrl1 = url.getText();
                     Graphics2D g2d1 = bufferedImage1.createGraphics();
@@ -253,7 +271,8 @@ public class GrowingTreeRandom implements Runnable{
 
     }
 
-    void drawSquare (int row, int column, int colorCode){
+    //functia dezeneaza un patrat ce poate sa reprezinte diverse celule din maze
+    public void drawSquare(int row, int column, int colorCode){
         Platform.runLater( () -> {
             g.setFill(color[colorCode]);
             int x = blockSize * column;
@@ -263,7 +282,7 @@ public class GrowingTreeRandom implements Runnable{
     }
 
     @Override
-    public void run() {
+    public void run() {//functia run pentru thread
         try {
             Thread.sleep(1000);
         }catch(InterruptedException e) { }
@@ -277,6 +296,7 @@ public class GrowingTreeRandom implements Runnable{
     }
 
     public void makeMaze(int inputRow,int inputColumn){
+        //se seteaza labirintul gol
         int row = inputRow;
         int column = inputColumn;
         for(int i = 0 ; i<rows ; ++i) {
@@ -294,16 +314,16 @@ public class GrowingTreeRandom implements Runnable{
             }
         }
 
-        java.util.List<Pair<Integer,Integer>> list1 = new ArrayList<>();
-        list1.add(new Pair<>(row,column));
-        while(list1.size()>0){
+        Stack<Pair<Integer,Integer>> stack = new Stack<>();//aici se vor stoca valorile care au fost vizitate si care inca au vezini nevizitati
+        stack.push(new Pair<>(row,column));
+        while(stack.size()>0){
             maze[row][column] = emptyCode;
             drawSquare(row,column,emptyCode);
             synchronized (this){
                 try { wait(speedSleep);}
                 catch (InterruptedException e){ }
             }
-            List<Pair<Integer, Integer>> neighbours = new ArrayList<Pair<Integer,Integer>>();
+            List<Pair<Integer, Integer>> neighbours = new ArrayList<Pair<Integer,Integer>>();//se verifica ce vecini au fost nevizitati
             if(row-2 > 0){
                 if(maze[row-2][column] < 0)
                     neighbours.add(new Pair<>(row-2,column));
@@ -321,10 +341,11 @@ public class GrowingTreeRandom implements Runnable{
                 if (maze[row][column + 2] < 0 && column + 2 < columns - 1)
                     neighbours.add(new Pair<>(row, column + 2));
             }
-            if(neighbours.size()>0) {
+            if(neighbours.size()!=0) {//in caz ca avem vecini nevizitati vom extrage un vecin random in care se va merge la urmatoarea faza
                 int next = (int) (Math.random() * neighbours.size());
                 int row1 = neighbours.get(next).getKey();
                 int column1 = neighbours.get(next).getValue();
+                //se verifica ce vecin a fost ales
                 if(row==row1){
                     if(column1>column){
                         maze[row][column+1]=emptyCode;
@@ -364,28 +385,18 @@ public class GrowingTreeRandom implements Runnable{
                         }
                     }
                 }
-                maze[row1][column1] = emptyCode;
-                drawSquare(row1,column1,emptyCode);
-                list1.add(new Pair<Integer,Integer>(row1,column1));
-                System.out.println(list1);
+                //se trece la urmatoarea valoare
+                row = row1;
+                column = column1;
+                stack.push(new Pair<>(row,column));
             }
-            if (list1.size() > 0) {
-                Pair<Integer,Integer>remove = null;
-                for (Pair<Integer, Integer> val : list1) {
-                    if (!verifyNeighbours(val))
-                        remove = val;
-                }
-                if(remove!= null)
-                    list1.remove(remove);
-                if (list1.size() > 0) {
-                    int nextItem = (int) (Math.random() * list1.size());
-                    row = list1.get(nextItem).getKey();
-                    column = list1.get(nextItem).getValue();
-                }
+            else{//daca nu avem vecini nevizitati se ia ultima celula ce a fost vizitata din stack
+                row = stack.peek().getKey();
+                column = stack.peek().getValue();
+                stack.pop();
             }
-
         }
-        for(int i = 0; i <rows;++i){
+        for(int i = 0; i <rows;++i){//se pun zidurile
             for (int j = 0 ; j<columns;++j){
                 if(maze[i][j]==100 || maze[i][j]==-1){
                     maze[i][j]=wallCode;
@@ -394,30 +405,9 @@ public class GrowingTreeRandom implements Runnable{
         }
     }
 
-    private boolean verifyNeighbours(Pair<Integer, Integer> val) {
-        int row = val.getKey();
-        int column = val.getValue();
-        if(row-2 > 0){
-            if(maze[row-2][column] < 0)
-                return true;
-        }
-        if( row+2< rows-1 ){
-            if(maze[row+2][column] < 0 )
-                return true;
-        }
-
-        if(column-2>0) {
-            if (maze[row][column - 2] < 0)
-                return true;
-        }
-        if(column + 2 < columns -1) {
-            if (maze[row][column + 2] < 0 && column + 2 < columns - 1)
-                return true;
-        }
-        return false;
-    }
-
     boolean solveMaze(int row,int col){
+        //solver pentru maze
+        //algoritmul lui Lee
         if(maze[row][col] == emptyCode){
             maze[row][col] = pathCode;
             drawSquare(row,col,pathCode);

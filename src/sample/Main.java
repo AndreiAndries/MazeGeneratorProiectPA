@@ -1,22 +1,15 @@
 package sample;
-import javafx.animation.FillTransition;
+import Design.ConfirmBox;
+import Design.MazeGenerator;
 import javafx.application.Application;
-import javafx.beans.property.ObjectProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Path;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-
-import javafx.util.Duration;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Main extends Application {
 
@@ -64,6 +57,7 @@ public class Main extends Application {
     RadioMenuItem s20x20 = new RadioMenuItem("20x20");
     RadioMenuItem s10x10 = new RadioMenuItem("10x10");
 
+    //setting up "settings" menu
     Scene scene;
     Scene settingsScene;
 
@@ -86,12 +80,14 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage){
-        window=primaryStage;
+        //functia ce se ocupa de partea de front-end pentru meniu
+        window=primaryStage;//se seteaza fereastra principala
         window.setTitle("Welcome to our application");
         window.setOnCloseRequest(e->{
             e.consume();
             closeProgram();
         });
+        //se fac setarile pentru meniu
         setUserAgentStylesheet(STYLESHEET_CASPIAN);
         initialMenu.setPadding(new Insets(20,20,20,20));
         bottomMenu.setPadding(new Insets(20,20,20,20));
@@ -109,6 +105,8 @@ public class Main extends Application {
         testButton.setBackground(new Background(new BackgroundFill(Color.LINEN,new CornerRadii(20), Insets.EMPTY)));
         testButton.setTextFill(Color.web("#0100FF",0.8));
         testButton.setStyle("-fx-font-weight: bold");
+
+        //se seteaza grafica pentru partea de jos a ferestrei
         Label label = new Label("Perfect 3D maze?");
         label.setStyle("-fx-font-weight: bold");
         label.setTextFill(Color.web("#FFFFFF",0.8));
@@ -134,6 +132,8 @@ public class Main extends Application {
         generateInitialMenu();
         bottomMenu.getChildren().addAll(vBox,testButton);
         bottomMenu.setAlignment(Pos.CENTER_RIGHT);
+
+        //se adauga componentele meniului
         menuBar.getMenus().addAll(algorithmMenu,mazeDimension,mazeSize);
         initialLayout.setTop(menuBar);
         initialLayout.setBottom(bottomMenu);
@@ -151,7 +151,7 @@ public class Main extends Application {
         window.show();
     }
 
-    private void setSettingsMenu() {
+    private void setSettingsMenu() {//functie care seteaza fundalul pentru scena cu "settings menu"
         settingsMenu.setAlignment(Pos.CENTER);
         settingsMenu.setBackground(new Background(new BackgroundFill(Color.DARKBLUE,CornerRadii.EMPTY,Insets.EMPTY)));
         Label algorithmTxt = new Label("Please choose the algorithm");
@@ -222,7 +222,7 @@ public class Main extends Application {
     }
 
 
-    private void setBottomSettings() {
+    private void setBottomSettings() {//functie care seteaza grafica pentru "bottomSettingsMenu"
         bottomSettingsMenu.setAlignment(Pos.CENTER_RIGHT);
         bottomSettingsMenu.setMinHeight(80);
         setButton.setBackground(new Background(new BackgroundFill(Color.LINEN,new CornerRadii(20), Insets.EMPTY)));
@@ -242,14 +242,14 @@ public class Main extends Application {
         bottomSettingsMenu.getChildren().addAll(setButton);
     }
 
-    private void getSettingsItems() {
+    private void getSettingsItems() {//functie care ia valorile ce au fost selectate de utilizator in meniul de setari
         String algorithmSwitch = algorithmChoise.getValue();
         String dimensionSwitch = dimensionChoise.getValue();
         String sizeSwitch = sizeChoise.getValue();
         String wallSwitch = wallChoise.getValue();
         String cellSwitch = cellChoise.getValue();
         String pathSwitch = pathChoise.getValue();
-        switch (algorithmSwitch){
+        switch (algorithmSwitch){//se preia algoritmul selectat de user
 
             case "Hunt and Kill algorithm" :
                 algorithmSelected = "haka";
@@ -296,7 +296,7 @@ public class Main extends Application {
                 break;
         }
 
-        switch (dimensionSwitch){
+        switch (dimensionSwitch){//se preia dimensiunea maze-ului
             case "2D" :
                 dimensionSelected = "2D";
                 d2D.setSelected(true);
@@ -311,7 +311,7 @@ public class Main extends Application {
                 dimensionSelected = "2D";
                 break;
         }
-        switch (sizeSwitch){
+        switch (sizeSwitch){//se preia marimea labirintului
             case  "10" :
                 sizeSelected = 10;
                 s40x40.setSelected(false);
@@ -353,7 +353,7 @@ public class Main extends Application {
                 s10x10.setSelected(false);
                 break;
         }
-        switch (wallSwitch){
+        switch (wallSwitch){//se preia culoarea pentru ziduri
             case "red" :
                 wallColor = Color.RED;
                 break;
@@ -363,7 +363,7 @@ public class Main extends Application {
             case "gray" :
                 wallColor = Color.GRAY;
         }
-        switch (cellSwitch){
+        switch (cellSwitch){//se preia culoarea pentru celula
             case "white" :
                 cellColor = Color.WHITE;
                 break;
@@ -375,7 +375,7 @@ public class Main extends Application {
                 break;
         }
 
-        switch (pathSwitch){
+        switch (pathSwitch){//se preia culoarea pentru path
             case "Azure" :
                 pathColor = Color.rgb(128,128,255);
                 break;
@@ -389,7 +389,7 @@ public class Main extends Application {
     }
 
 
-    public void setToggleAlgorithm(){
+    public void setToggleAlgorithm(){//se seteaza algoritmul default
         haka.setSelected(true);
         algorithmSelected = "haka";
         haka.setToggleGroup(algorithm);
@@ -400,7 +400,7 @@ public class Main extends Application {
         algorithmMenu.getItems().addAll(haka,rka,gtn,gto,gtr);
     }
 
-    public void setToggleDimension(){
+    public void setToggleDimension(){//se seteaza dimensiune default
         d2D.setToggleGroup(dimension);
         d2D.setSelected(true);
         dimensionSelected = "2D";
@@ -408,12 +408,13 @@ public class Main extends Application {
         mazeDimension.getItems().addAll(d2D,d3D);
     }
 
-    public void setInitialColors(){
+    public void setInitialColors(){//se seteaza culorile default
         wallColor = Color.RED;
         cellColor = Color.WHITE;
         pathColor = Color.rgb(128,128,255);
     }
-    public void setToggleSize(){
+
+    public void setToggleSize(){//se seteaza marimea default
         s40x40.setToggleGroup(size);
         s40x40.setSelected(true);
         sizeSelected = 40;
@@ -425,7 +426,7 @@ public class Main extends Application {
         mazeSize.getItems().addAll(s10x10,s20x20,s30x30,s40x40,s50x50);
     }
 
-    public void setAlgorithmSelectedAction(){
+    public void setAlgorithmSelectedAction(){//se fac setarile pentru meniul de algoritm
 
         rka.setOnAction(e->{
             algorithmSelected = "rka";
@@ -469,7 +470,7 @@ public class Main extends Application {
         });
     }
 
-    public void setDimensionSelectedAction(){
+    public void setDimensionSelectedAction(){//se fac setarile pentru meniul de dimensiune
         d2D.setOnAction(e->{
             d2D.setSelected(true);
             d3D.setSelected(false);
@@ -482,7 +483,7 @@ public class Main extends Application {
         });
     }
 
-    public void setSizeSelectedAction(){
+    public void setSizeSelectedAction(){//se fac setarile pentru meniul de marime
         s40x40.setOnAction(e->{
             s40x40.setSelected(true);
             s50x50.setSelected(false);
@@ -525,7 +526,8 @@ public class Main extends Application {
         });
     }
 
-    private void closeProgram(){
+    private void closeProgram(){//functie care face sa apara o fereastra care intreaba daca sigur utilizatorul
+        //doreste sa inchida programul
         boolean answer = ConfirmBox.display("Are you sure?","Are you sure you want to exit?");
         if(answer) {
             window.close();
@@ -533,7 +535,7 @@ public class Main extends Application {
         }
     }
 
-    public void generateInitialMenu(){
+    public void generateInitialMenu(){//se seteaza design-ul pentru componentele meniului initial
         initialMenu.setAlignment(Pos.CENTER);
         initialMenu.setBackground(new Background(new BackgroundFill(Color.DARKBLUE,CornerRadii.EMPTY,Insets.EMPTY)));
 

@@ -1,4 +1,4 @@
-package sample;
+package Mazes;
 
 import javafx.application.Platform;
 import javafx.geometry.Pos;
@@ -25,7 +25,13 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HuntAndKillMazeGenerator implements Runnable{
+/**
+ * aceeasi idee ca si la growing tree oldest doar ca in loc de o stiva
+ * vom folosi o lista din care vom alege random urmatoarea celula pentru care se face verificarea
+ * iar daca celula curenta nu mai are vecini ce pot fi vizitati aceasta va fi eliminata din lista
+ * */
+
+public class GrowingTreeRandom implements Runnable,Maze{
     private int maze[][];
 
     private final int backgroundCode = 0;
@@ -52,7 +58,7 @@ public class HuntAndKillMazeGenerator implements Runnable{
     javafx.scene.control.TextField url;
     public static Stage stage = new Stage();
 
-    HuntAndKillMazeGenerator(int size,Color wall,Color cell,Color path){
+    public GrowingTreeRandom(int size, Color wall, Color cell, Color path){
         this.rows = size+1;
         this.columns = size+1;
         switch (size){
@@ -83,6 +89,8 @@ public class HuntAndKillMazeGenerator implements Runnable{
     }
 
     public void display(){
+        //fuctia display este functia ce reprezinta partea de front-end al oricarui maze
+        //aici se fac toate satarile pentru front-endul de generare de maze
         maze = new int[rows][columns];
         canvas = new Canvas(columns*blockSize, rows*blockSize);
         g = canvas.getGraphicsContext2D();
@@ -133,14 +141,14 @@ public class HuntAndKillMazeGenerator implements Runnable{
 
         });
         stopButton.setOnAction(e->{runner.stop();
-        for(int i=1;i<rows-1;++i){
-            for (int j = 1 ; j<columns-1;++j){
-                if(maze[i][j]==-1)
-                    System.out.print(9 + " ");
-                else System.out.print(maze[i][j] + " ");
+            for(int i=1;i<rows-1;++i){
+                for (int j = 1 ; j<columns-1;++j){
+                    if(maze[i][j]==-1)
+                        System.out.print(9 + " ");
+                    else System.out.print(maze[i][j] + " ");
+                }
+                System.out.println();
             }
-            System.out.println();
-        }
         });
         saveButton.setOnAction(e->{
             String saveFormat = format.getValue();
@@ -253,7 +261,7 @@ public class HuntAndKillMazeGenerator implements Runnable{
 
     }
 
-    void drawSquare (int row, int column, int colorCode){
+    public void drawSquare(int row, int column, int colorCode){
         Platform.runLater( () -> {
             g.setFill(color[colorCode]);
             int x = blockSize * column;
@@ -267,7 +275,7 @@ public class HuntAndKillMazeGenerator implements Runnable{
         try {
             Thread.sleep(1000);
         }catch(InterruptedException e) { }
-        makeMaze();
+        makeMaze(1,1);
         solveMaze(1,1);
         synchronized (this){
             try {
@@ -276,7 +284,9 @@ public class HuntAndKillMazeGenerator implements Runnable{
         }
     }
 
-    public void makeMaze(){
+    public void makeMaze(int inputRow,int inputColumn){
+        int row = inputRow;
+        int column = inputColumn;
         for(int i = 0 ; i<rows ; ++i) {
             maze[i][0] = 100;
             maze[i][columns-1] = 100;
@@ -291,124 +301,133 @@ public class HuntAndKillMazeGenerator implements Runnable{
                 maze[i][j] = -1;
             }
         }
-        for(int i=0;i<rows;++i) {
-            for (int j = 0; j < columns; ++j) {
-                System.out.print(maze[i][j] + " ");
+
+        java.util.List<Pair<Integer,Integer>> list1 = new ArrayList<>();
+        list1.add(new Pair<>(row,column));
+        while(list1.size()>0){
+            maze[row][column] = emptyCode;
+            drawSquare(row,column,emptyCode);
+            synchronized (this){
+                try { wait(speedSleep);}
+                catch (InterruptedException e){ }
             }
-            System.out.println();
-        }
-        int row = (int) (Math.random() * (rows-2)) + 1 ;
-        int column = (int) (Math.random() * (columns-2)) + 1 ;;
-        boolean notOver= true;
-        while(notOver){
-            boolean hasNeighbour = true;
-            while (hasNeighbour){
-                maze[row][column] = emptyCode;
-                List<Pair<Integer, Integer>> neighbours = new ArrayList<Pair<Integer,Integer>>();
-                drawSquare(row,column,emptyCode);
-                synchronized (this){
-                    try { wait(speedSleep);}
-                    catch (InterruptedException e){ }
-                }
-                if(maze[row-1][column] < 0)
-                    neighbours.add(new Pair<>(row-1,column));
-                if(maze[row+1][column] < 0)
-                    neighbours.add(new Pair<>(row+1,column));
-                if(maze[row][column-1] < 0)
-                    neighbours.add(new Pair<>(row,column-1));
-                if(maze[row][column+1] < 0)
-                    neighbours.add(new Pair<>(row,column+1));
-                if(neighbours.size()!=0){
-                    int next = (int) (Math.random() * neighbours.size());
-                    int row1 = neighbours.get(next).getKey();
-                    int column1 = neighbours.get(next).getValue();
-                    if(row == row1)
-                    {
-                        if(column1>column){
-                            if(maze[row -1][column -1]<0)
-                                maze[row -1][column -1] = wallCode;
-                            if(maze[row+1][column-1]<0)
-                                maze[row+1][column-1] = wallCode;
-                        }
-                        else{
-                            if(maze[row -1][column+1]<0)
-                                maze[row -1][column+1]=wallCode;
-                            if(maze[row +1][column+1]<0)
-                                maze[row +1][column+1]=wallCode;
+            List<Pair<Integer, Integer>> neighbours = new ArrayList<Pair<Integer,Integer>>();
+            if(row-2 > 0){
+                if(maze[row-2][column] < 0)
+                    neighbours.add(new Pair<>(row-2,column));
+            }
+            if( row+2< rows-1 ){
+                if(maze[row+2][column] < 0 )
+                    neighbours.add(new Pair<>(row+2,column));
+            }
+
+            if(column-2>0) {
+                if (maze[row][column - 2] < 0)
+                    neighbours.add(new Pair<>(row, column - 2));
+            }
+            if(column + 2 < columns -1) {
+                if (maze[row][column + 2] < 0 && column + 2 < columns - 1)
+                    neighbours.add(new Pair<>(row, column + 2));
+            }
+            if(neighbours.size()>0) {
+                int next = (int) (Math.random() * neighbours.size());
+                int row1 = neighbours.get(next).getKey();
+                int column1 = neighbours.get(next).getValue();
+                if(row==row1){
+                    if(column1>column){
+                        maze[row][column+1]=emptyCode;
+                        drawSquare(row,column+1,emptyCode);
+                        synchronized (this){
+                            try { wait(speedSleep);}
+                            catch (InterruptedException e){ }
                         }
                     }
-                    if(column1 == column)
-                    {
-                        if(row1>row){
-                            if(maze[row -1][column -1]<0)
-                                maze[row -1][column -1] = wallCode;
-                            if(maze[row -1][column+1]<0)
-                                maze[row -1][column+1] = wallCode;
-                        }
-                        else{
-                            if(maze[row +1][column-1]<0)
-                                maze[row +1][column-1]=wallCode;
-                            if(maze[row +1][column+1]<0)
-                                maze[row +1][column+1]=wallCode;
-                        }
-                    }
-                    row = row1;
-                    column = column1;
-                    neighbours.remove(next);
-                    if(neighbours.size()!=0) {
-                        for (Pair<Integer, Integer> ngh : neighbours) {
-                            maze[ngh.getKey()][ngh.getValue()] = wallCode;
+                    else {
+                        maze[row][column-1]=emptyCode;
+                        drawSquare(row,column-1,emptyCode);
+                        synchronized (this){
+                            try { wait(speedSleep);}
+                            catch (InterruptedException e){ }
                         }
                     }
                 }
-                else
-                    hasNeighbour = false;
-            }
-            notOver = false;
-            for(int i = 1 ; i < rows - 1 && notOver == false ;i++){
-                for (int j = 1 ; j <columns - 1 && notOver == false ; j++){
-                    if(maze[i][j] < 0 && maze[i-1][j] == wallCode && maze[i-2][j]== emptyCode  && i-2 >0){
-                        row = i;
-                        column = j;
-                        maze[i-1][j]=emptyCode;
-                        drawSquare(i-1,j,emptyCode);
-                        notOver = true;
-                    }
-                    else if(maze[i][j] < 0 && maze[i+1][j] == wallCode && maze[i+2][j]== emptyCode && i+2 <rows){
-                        row = i;
-                        column = j;
-                        maze[i+1][j]=emptyCode;
-                        drawSquare(i+1,j,emptyCode);
-                        notOver = true;
-                    }
-                    else if(maze[i][j] < 0 && maze[i][j-1] == wallCode && maze[i][j-2]== emptyCode && j-2 >0){
-                        row = i;
-                        column = j;
-                        maze[i][j-1]=emptyCode;
-                        drawSquare(i,j-1,emptyCode);
-                        notOver = true;
-                    }
-                    else if(maze[i][j] < 0 && maze[i][j+1] == wallCode && maze[i][j+2]== emptyCode && j+2 <columns){
-                        row = i;
-                        column = j;
-                        maze[i][j+1]=emptyCode;
-                        drawSquare(i,j+1,emptyCode);
-                        notOver = true;
+                if(column1 == column) {
+                    if (row1 > row) {
+                        maze[row + 1][column] = emptyCode;
+                        drawSquare(row + 1, column, emptyCode);
+                        synchronized (this) {
+                            try {
+                                wait(speedSleep);
+                            } catch (InterruptedException e) {
+                            }
+                        }
+                    } else {
+                        maze[row - 1][column] = emptyCode;
+                        drawSquare(row - 1, column, emptyCode);
+                        synchronized (this) {
+                            try {
+                                wait(speedSleep);
+                            } catch (InterruptedException e) {
+                            }
+                        }
                     }
                 }
+                maze[row1][column1] = emptyCode;
+                drawSquare(row1,column1,emptyCode);
+                list1.add(new Pair<Integer,Integer>(row1,column1));
+                System.out.println(list1);
             }
+            if (list1.size() > 0) {
+                Pair<Integer,Integer>remove = null;
+                for (Pair<Integer, Integer> val : list1) {
+                    if (!verifyNeighbours(val))
+                        remove = val;
+                }
+                if(remove!= null)
+                    list1.remove(remove);
+                if (list1.size() > 0) {
+                    int nextItem = (int) (Math.random() * list1.size());
+                    row = list1.get(nextItem).getKey();
+                    column = list1.get(nextItem).getValue();
+                }
+            }
+
         }
-        for(int i = 0 ; i<rows ; ++i) {
-            maze[i][0] = wallCode;
-            maze[i][columns-1] = wallCode;
-        }
-        for(int i = 0 ; i<columns ; ++i) {
-            maze[0][i] = wallCode;
-            maze[rows-1][i] = wallCode;
+        for(int i = 0; i <rows;++i){
+            for (int j = 0 ; j<columns;++j){
+                if(maze[i][j]==100 || maze[i][j]==-1){
+                    maze[i][j]=wallCode;
+                }
+            }
         }
     }
 
+    private boolean verifyNeighbours(Pair<Integer, Integer> val) {
+        int row = val.getKey();
+        int column = val.getValue();
+        if(row-2 > 0){
+            if(maze[row-2][column] < 0)
+                return true;
+        }
+        if( row+2< rows-1 ){
+            if(maze[row+2][column] < 0 )
+                return true;
+        }
+
+        if(column-2>0) {
+            if (maze[row][column - 2] < 0)
+                return true;
+        }
+        if(column + 2 < columns -1) {
+            if (maze[row][column + 2] < 0 && column + 2 < columns - 1)
+                return true;
+        }
+        return false;
+    }
+
     boolean solveMaze(int row,int col){
+        //solver pentru maze
+        //algoritmul lui Lee
         if(maze[row][col] == emptyCode){
             maze[row][col] = pathCode;
             drawSquare(row,col,pathCode);

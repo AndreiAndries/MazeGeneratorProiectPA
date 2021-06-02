@@ -1,4 +1,4 @@
-package sample;
+package Mazes;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -27,7 +27,26 @@ import java.awt.image.*;
 import java.io.*;
 import java.util.Vector;
 
-public class KruskalMazeGenerator implements Runnable{
+/**
+ * 1. Se alege un punct random de plecare
+ *
+ * 2. Se alege în mod aleatoriu un perete în acel punct și se construieste un
+ * pasaj către celula adiacentă, dar numai dacă celula adiacentă nu a
+ * fost încă vizitată. Aceasta devine noua celula curenta.
+ *
+ * 3. Daca toate celulele adiacente au fost vizitate ne intoarcem la
+ * ultima celulă care are pereți necizelați și se repeta
+ *
+ * 4. Algoritmul se termină atunci când procesul sa întors până la punctul
+ * de plecare
+ *
+ *
+ * Throw all of the edges in the graph into a big burlap sack. (Or, you know, a set or something.)
+ * Pull out the edge with the lowest weight. If the edge connects two disjoint trees, join the trees. Otherwise, throw that edge away.
+ * Repeat until there are no more edges left.
+ * */
+
+public class KruskalMazeGenerator implements Runnable,Maze{
 
     private int maze[][];
 
@@ -55,7 +74,7 @@ public class KruskalMazeGenerator implements Runnable{
     javafx.scene.control.TextField url;
     public static Stage stage = new Stage();
 
-    KruskalMazeGenerator(int size,Color wall,Color cell,Color path){
+    public KruskalMazeGenerator(int size, Color wall, Color cell, Color path){
         this.rows = size+1;
         this.columns = size+1;
         switch (size){
@@ -86,6 +105,8 @@ public class KruskalMazeGenerator implements Runnable{
     }
 
     public void display(){
+        //fuctia display este functia ce reprezinta partea de front-end al oricarui maze
+        //aici se fac toate satarile pentru front-endul de generare de maze
         maze = new int[rows][columns];
         canvas = new Canvas(columns*blockSize, rows*blockSize);
         g = canvas.getGraphicsContext2D();
@@ -246,7 +267,8 @@ public class KruskalMazeGenerator implements Runnable{
 
     }
 
-    void drawSquare (int row, int column, int colorCode){
+    //functia dezeneaza un patrat ce poate sa reprezinte diverse celule din maze
+    public void drawSquare(int row, int column, int colorCode){
         Platform.runLater( () -> {
             g.setFill(color[colorCode]);
             int x = blockSize * column;
@@ -256,11 +278,11 @@ public class KruskalMazeGenerator implements Runnable{
     }
 
     @Override
-    public void run() {
+    public void run() {//functia run pentru thread
         try {
             Thread.sleep(1000);
         }catch(InterruptedException e) { }
-        makeMaze();
+        makeMaze(1,1);
         solveMaze(1,1);
         synchronized (this){
             try {
@@ -269,12 +291,12 @@ public class KruskalMazeGenerator implements Runnable{
         }
     }
 
-    public void makeMaze(){
+    public void makeMaze(int inputRow,int inputColumn){//generarea maze-ului
         int i,j;
-        int emptyCt = 0; //number of rooms
-        int wallCt = 0; //number of walls
-        int[] wallrow = new int [(rows * columns)/2];
-        int[] wallcol = new int [(rows*columns)/2];
+        int emptyCt = 0; //numarul de camere
+        int wallCt = 0; //numarul de ziduri
+        int[] wallrow = new int [(rows * columns)/2];//zidurile de pe randuri
+        int[] wallcol = new int [(rows*columns)/2];//zidurile de pe coloane
         for (i=0;i<rows;++i){
             for(j=0;j<columns;++j){
                 maze[i][j] = wallCode;
@@ -283,6 +305,9 @@ public class KruskalMazeGenerator implements Runnable{
         for(i=1;i<rows-1;i+=2){
             for(j=1;j<columns-1;j+=2){
                 emptyCt++;
+                //se pun primele coloane goale
+                //se iau din 2 in 2
+                //si se salveaza zidurile
                 maze[i][j] = -emptyCt;
                 if(i<rows-2){
                     wallrow[wallCt] = i+1;
@@ -297,11 +322,11 @@ public class KruskalMazeGenerator implements Runnable{
             }
         }
         Platform.runLater( () ->{
-            g.setFill(color[emptyCode]);
+            g.setFill(color[emptyCode]);//se alege culoare de desenare pentru celule
             for (int r=0;r<rows;++r){
                 for(int c = 0; c < columns; ++c){
-                    if(maze[r][c]<0)
-                        g.fillRect(c*blockSize,r*blockSize,blockSize,blockSize);
+                    if(maze[r][c]<0)//se verifica daca o celula reprezinta o celula goala sau un zid
+                        g.fillRect(c*blockSize,r*blockSize,blockSize,blockSize);//se deseneaza patratele
                 }
             }
         });
@@ -313,14 +338,14 @@ public class KruskalMazeGenerator implements Runnable{
         }
         int r;
         for(i = wallCt - 1 ; i > 0 ; i--){
-            r = (int)(Math.random() * i);
-            tearDown(wallrow[r],wallcol[r]);
-            wallrow[r] = wallrow[i];
-            wallcol[r] = wallcol[i];
+            r = (int)(Math.random() * i);//se alege un zid rangom
+            tearDown(wallrow[r],wallcol[r]);//se apeleaza functia tear down
+            wallrow[r] = wallrow[i];//se schiba valoarea wallului
+            wallcol[r] = wallcol[i];//se schimba valoarea coloanei
         }
         for (i=1; i<rows-1;++i){
             for(j=1;j<columns-1; j++) {
-                if (maze[i][j] < 0) {
+                if (maze[i][j] < 0) {//se pun valorile pentru celule in matrice in caz ca se gasesc valori negative
                     maze[i][j] = emptyCode;
                 }
             }
@@ -335,9 +360,10 @@ public class KruskalMazeGenerator implements Runnable{
 
     void tearDown(int row,int col){
         if(row % 2 == 1 && maze[row][col-1] != maze[row][col+1]){
-            fill(row, col-1, maze[row][col-1],maze[row][col+1]);
+            //se verifica daca randul este impar si daca doua celule vecine pe coloane celulei curente au cod diferit
+            fill(row, col-1, maze[row][col-1],maze[row][col+1]);//in caz afirmativ se creeaza un pasaj intre celule
             maze[row][col] = maze[row][col+1];
-            drawSquare(row,col,emptyCode);
+            drawSquare(row,col,emptyCode);//se deseneaza celulele goale
             synchronized (this){
                 try {
                     wait(speedSleep);
@@ -345,9 +371,10 @@ public class KruskalMazeGenerator implements Runnable{
             }
         }
         else if(row % 2 == 0 && maze[row-1][col] != maze[row+1][col]){
-            fill(row - 1, col, maze[row-1][col],maze[row+1][col]);
+            //se verifica daca randul este par si daca doua celule vecine pe randuri celulei curente au cod diferit
+            fill(row - 1, col, maze[row-1][col],maze[row+1][col]);//se creeaza pasaj
             maze[row][col]=maze[row+1][col];
-            drawSquare(row,col,emptyCode);
+            drawSquare(row,col,emptyCode);//se deseneaza celulele goale
             synchronized (this){
                 try { wait(speedSleep);}
                 catch (InterruptedException e){ }
@@ -355,7 +382,7 @@ public class KruskalMazeGenerator implements Runnable{
         }
     }
 
-    void fill(int row,int col, int replace, int replaceWith){
+    void fill(int row,int col, int replace, int replaceWith){//functie care schimba valorile celulelor din maze
         if(maze[row][col] == replace){
             maze[row][col] = replaceWith;
             fill(row+1,col,replace,replaceWith);
@@ -366,6 +393,8 @@ public class KruskalMazeGenerator implements Runnable{
     }
 
     boolean solveMaze(int row,int col){
+        //solver pentru maze
+        //algoritmul lui Lee
         if(maze[row][col] == emptyCode){
             maze[row][col] = pathCode;
             drawSquare(row,col,pathCode);

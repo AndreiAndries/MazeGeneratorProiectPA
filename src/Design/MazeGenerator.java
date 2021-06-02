@@ -1,8 +1,11 @@
-package sample;
+package Design;
 
+import Mazes.*;
 import javafx.scene.paint.Color;
-
-import java.util.Locale;
+/**
+ * in aceasta clasa se construiesc datele in functie de maze-ul care se doreste a fi implementat
+ * dupa ce constructorul modifica variabilele globale se apeleaza metoda start maze in care se deschide noul maze care se va construi
+ * */
 
 public class MazeGenerator {
 
@@ -15,6 +18,7 @@ public class MazeGenerator {
     private Color pathColor;
 
     public MazeGenerator(String dimension, int size, String username, String algorithm, Color wallColor, Color cellColor, Color pathColor) {
+        //constructor
         this.dimension = dimension;
         Size = size;
         this.username = username;
@@ -24,63 +28,8 @@ public class MazeGenerator {
         this.pathColor = pathColor;
     }
 
-    public Color getWallColor() {
-        return wallColor;
-    }
-
-    public void setWallColor(Color wallColor) {
-        this.wallColor = wallColor;
-    }
-
-    public Color getCellColor() {
-        return cellColor;
-    }
-
-    public void setCellColor(Color cellColor) {
-        this.cellColor = cellColor;
-    }
-
-    public Color getPathColor() {
-        return pathColor;
-    }
-
-    public void setPathColor(Color pathColor) {
-        this.pathColor = pathColor;
-    }
-
-    public String getDimension() {
-        return dimension;
-    }
-
-    public void setDimension(String dimension) {
-        this.dimension = dimension;
-    }
-
-    public int getSize() {
-        return Size;
-    }
-
-    public void setSize(int size) {
-        Size = size;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getAlgorithm() {
-        return algorithm;
-    }
-
-    public void setAlgorithm(String algorithm) {
-        this.algorithm = algorithm;
-    }
-
-    public void startMaze(){
+    public void startMaze(){//metoda care verifica daca maze-ul carfe se vrea a fi construit este 2D sau 3D
+        //in functie de dimensiune se construieste maze-ul dorit
         if(dimension.equals("2D")){
             switch (algorithm) {
                 case "rka":
@@ -115,7 +64,5 @@ public class MazeGenerator {
                 mazeGenerator3D.display();
             }
         }
-
-        /*Recursive BackTracker*/
     }
 }

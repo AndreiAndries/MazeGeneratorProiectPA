@@ -9,4 +9,6 @@ module ProiectPa2021 {
     requires javafx.fxmlEmpty;
     requires javafx.graphicsEmpty;
     opens sample;
+    opens Mazes;
+    opens Design;
 }

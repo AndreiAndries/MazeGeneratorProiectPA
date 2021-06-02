@@ -1,4 +1,4 @@
-package sample;
+package Design;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -10,6 +10,9 @@ import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+/**
+ * Se afiseaza un confirm box pentru momentele cand se apasa Exit
+ * */
 public class ConfirmBox {
 
     static boolean answer;

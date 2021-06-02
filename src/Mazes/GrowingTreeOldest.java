@@ -1,4 +1,4 @@
-package sample;
+package Mazes;
 
 import javafx.application.Platform;
 import javafx.geometry.Pos;
@@ -26,7 +26,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-public class GrowingTreeOldest implements Runnable{
+/**
+ * aceeasi idee ca si la growing tree oldest doar ca in loc de o stiva
+ * vom folosi o coada si pana celula actuala nu mai are vecini nevizitati
+ * nu se va trece mai departe la un alt vecin
+ * */
+
+public class GrowingTreeOldest implements Runnable,Maze{
         private int maze[][];
 
         private final int backgroundCode = 0;
@@ -53,7 +59,7 @@ public class GrowingTreeOldest implements Runnable{
         javafx.scene.control.TextField url;
         public static Stage stage = new Stage();
 
-        GrowingTreeOldest(int size,Color wall,Color cell,Color path){
+        public GrowingTreeOldest(int size, Color wall, Color cell, Color path){
             this.rows = size+1;
             this.columns = size+1;
             switch (size){
@@ -84,6 +90,8 @@ public class GrowingTreeOldest implements Runnable{
         }
 
         public void display(){
+            //fuctia display este functia ce reprezinta partea de front-end al oricarui maze
+            //aici se fac toate satarile pentru front-endul de generare de maze
             maze = new int[rows][columns];
             canvas = new Canvas(columns*blockSize, rows*blockSize);
             g = canvas.getGraphicsContext2D();
@@ -254,7 +262,7 @@ public class GrowingTreeOldest implements Runnable{
 
         }
 
-        void drawSquare (int row, int column, int colorCode){
+        public void drawSquare(int row, int column, int colorCode){
             Platform.runLater( () -> {
                 g.setFill(color[colorCode]);
                 int x = blockSize * column;
@@ -386,6 +394,8 @@ public class GrowingTreeOldest implements Runnable{
         }
 
         boolean solveMaze(int row,int col){
+            //solver pentru maze
+            //algoritmul lui Lee
             if(maze[row][col] == emptyCode){
                 maze[row][col] = pathCode;
                 drawSquare(row,col,pathCode);
